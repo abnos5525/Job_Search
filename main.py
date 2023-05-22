@@ -10,6 +10,7 @@ from manage import WebDriverSingleton
 from Search import Search
 from SignIn import SignIn
 
+
 class Window(QMainWindow):
     def __init__(self):
         super().__init__()
