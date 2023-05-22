@@ -14,7 +14,7 @@ from manage import WebDriverSingleton
 import pickle
 
 class Search(QObject):
-    finished = pyqtSignal()
+    finished = pyqtSignal(str)
     
     def __init__(self, text):
         super().__init__()
@@ -22,7 +22,7 @@ class Search(QObject):
         self.searchText = text[0]
         self.cityText = text[1]
         self.categoryText = text[2]
-        self.resultText = text[3]
+        #self.resultText = text[3]
         
     def do_work(self):
         #options = Options()
@@ -69,21 +69,35 @@ class Search(QObject):
         
         if ulTag:
             listWorkName = self.driver.find_elements(By.CLASS_NAME,'c-jobListView__titleLink')
-            listCompName = self.driver.find_elements(By.CSS_SELECTOR,'c-jobListView__metaItem > i.c-icon--12x12 c-icon--construction + span')
-            listContract = self.driver.find_elements(By.CSS_SELECTOR,'c-jobListView__metaItem > i.c-icon--12x12 c-icon--resume + span')
+            cityName = self.driver.find_elements(By.CSS_SELECTOR,'i.c-icon--place + span')
+            listCompName = self.driver.find_elements(By.CSS_SELECTOR,'c-jobListView__metaItem > i.c-icon--construction + span')
+            listContract1 = self.driver.find_elements(By.CSS_SELECTOR,'c-jobListView__metaItem > span:first-child')
+            listContract2 = self.driver.find_elements(By.CSS_SELECTOR,'c-jobListView__metaItem > span:nth-child(2)')
            
-            print('yes')
-            for w in listWorkName:
-                # for c in listCompName:
-                #     for con in listContract:
-                        result += w.get_attribute("innerHTML") + ',\n'
+            # for w in listWorkName:
+            for city in cityName:
+                    # for c1 in listCompName:
+                    #     for c2 in listContract1:
+                    #         for con in listContract2:
+                                # text = w.get_attribute("innerHTML")
+                                # result += text.lstrip() + '\n'
+                                text = city.get_attribute("innerHTML")
+                                result += text.lstrip() + '\n'
+                                print('okk')
+                                # text = c1.get_attribute("innerHTML")
+                                # result += text.lstrip() + ' '
+                                # text = c2.get_attribute("innerHTML")
+                                # result += text.lstrip() + '\n'
+                                # text = con.get_attribute("innerHTML")
+                                # result += text.lstrip() + '\n'
+                                result += '----------------\n'
             
         else:
             result += 'Nothing be Found!'
             
-        self.append_info(result)
+        # self.append_info(result)
      
-        self.finished.emit()
+        self.finished.emit(result)
 
-    def append_info(self, info):
-        self.resultText.setText(info)
+    # def append_info(self, info):
+    #     self.resultText.setText(info)

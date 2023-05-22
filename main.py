@@ -1,25 +1,14 @@
 import manage
-from selenium import webdriver
-from selenium.webdriver.common.by import By
-from selenium.webdriver.common.keys import Keys
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as ec
-import time
 import os
 from colorama import Fore
 import sys
 from PyQt5.QtWidgets import *
-from PyQt5.QtGui import QIcon
 from PyQt5.QtCore import Qt
 from PyQt5 import uic
-from threading import Thread
-from PyQt5.QtCore import QThread, pyqtSignal, QObject
-from selenium.webdriver.firefox.options import Options
-import shutil
+from PyQt5.QtCore import QThread
 from manage import WebDriverSingleton
 from Search import Search
 from SignIn import SignIn
-import pickle
 
 class Window(QMainWindow):
     def __init__(self):
@@ -28,8 +17,6 @@ class Window(QMainWindow):
         self.stackedWidget.setCurrentIndex(0)
         self.txtResult.setLayoutDirection(Qt.RightToLeft)
         #--------------------------------------------------
-        self.txtUsername.setText('abnos5525@gmail.com')
-        self.txtPassword.setText('mhh55258114')
         
         if manage.signin() == False:
             self.btnExit.setEnabled(False)
@@ -63,9 +50,9 @@ class Window(QMainWindow):
         password = self.txtPassword.text()
         
         resultText = self.txtResult.toPlainText()
-        if jobText != '':
+        if jobText != '' or username != '' or  password != '':
             self.signInInfo = [username,password]
-            self.searchInfo = [jobText,cityText,categoryText,self.txtResult]
+            self.searchInfo = [jobText,cityText,categoryText]
             
             
             if not manage.signin():
@@ -82,6 +69,7 @@ class Window(QMainWindow):
                 self.second_worker.finished.connect(self.second_worker.deleteLater)
                 self.second_thread.finished.connect(self.second_thread.deleteLater)
 
+                self.second_worker.finished.connect(self.update_result)
 
                 self.first_thread.started.connect(self.first_worker.do_work)
                 self.first_thread.start()
@@ -94,6 +82,8 @@ class Window(QMainWindow):
                 self.second_worker.finished.connect(self.second_thread.quit)
                 self.second_worker.finished.connect(self.second_worker.deleteLater)
                 self.second_thread.finished.connect(self.second_thread.deleteLater)
+                
+                self.second_worker.finished.connect(self.update_result)
 
                 self.second_thread.started.connect(self.second_worker.do_work)
                 self.second_thread.start()
@@ -101,7 +91,10 @@ class Window(QMainWindow):
             
             
         else:
-            QMessageBox.warning(self,'اخطار','فیلد جستجو را پر کنید')
+            QMessageBox.warning(self,'اخطار','فیلدها را پر کنید')
+            
+    def update_result(self, result):
+        self.txtResult.setText(result)
             
     def start(self):
         if manage.signin() == False:
