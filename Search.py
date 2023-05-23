@@ -22,7 +22,6 @@ class Search(QObject):
         self.searchText = text[0]
         self.cityText = text[1]
         self.categoryText = text[2]
-        #self.resultText = text[3]
         
     def do_work(self):
         #options = Options()
@@ -70,25 +69,23 @@ class Search(QObject):
         if ulTag:
             listWorkName = self.driver.find_elements(By.CLASS_NAME,'c-jobListView__titleLink')
             cityName = self.driver.find_elements(By.CSS_SELECTOR,'i.c-icon--place + span')
-            listCompName = self.driver.find_elements(By.CSS_SELECTOR,'c-jobListView__metaItem > i.c-icon--construction + span')
+            listCompName = self.driver.find_elements(By.CSS_SELECTOR,'i.c-icon--construction + span')
             listContract1 = self.driver.find_elements(By.CSS_SELECTOR,'c-jobListView__metaItem > span:first-child')
             listContract2 = self.driver.find_elements(By.CSS_SELECTOR,'c-jobListView__metaItem > span:nth-child(2)')
            
-            # for w in listWorkName:
-            for city in cityName:
+            for w,city,c in zip(listWorkName,cityName,listCompName):
                     # for c1 in listCompName:
                     #     for c2 in listContract1:
                     #         for con in listContract2:
-                                # text = w.get_attribute("innerHTML")
-                                # result += text.lstrip() + '\n'
+                                text = w.get_attribute("innerHTML")
+                                result += text.lstrip() + '\n'
                                 text = city.get_attribute("innerHTML")
                                 result += text.lstrip() + '\n'
-                                print('okk')
-                                # text = c1.get_attribute("innerHTML")
-                                # result += text.lstrip() + ' '
-                                # text = c2.get_attribute("innerHTML")
+                                text = c.get_attribute("innerHTML")
+                                result += text.lstrip() + '\n'
+                                # text = con1.get_attribute("innerHTML")
                                 # result += text.lstrip() + '\n'
-                                # text = con.get_attribute("innerHTML")
+                                # text = con2.get_attribute("innerHTML")
                                 # result += text.lstrip() + '\n'
                                 result += '----------------\n'
             

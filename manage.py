@@ -35,16 +35,14 @@ def starter():
 
 def signin():
   signdIn = False
-  # current_directory = os.path.dirname(os.path.abspath(__file__))
-  # directory = current_directory + '\history'
   
   # options = Options()
   # options.add_argument('--headless')
   driverClass = WebDriverSingleton()
   driver = driverClass.get_driver()
   
-  user_cookie = driver.get_cookie("user")
-  password_cookie = driver.get_cookie("password")
+  # user_cookie = driver.get_cookie("user")
+  # password_cookie = driver.get_cookie("password")
   
   if os.path.exists('cookies.pkl'):
     signdIn = True

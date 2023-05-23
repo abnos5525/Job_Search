@@ -14,7 +14,7 @@ from manage import WebDriverSingleton
 import pickle
 
 class SignIn(QObject):
-    finished = pyqtSignal()
+    finished = pyqtSignal(str)
     
     def __init__(self, text):
         super().__init__()
@@ -32,7 +32,7 @@ class SignIn(QObject):
             # self.options = Options()
             # self.options.add_argument(f"--profile={self.directory}")
             #self.options.add_argument(self.directory)
-            
+        try:
             options = Options()
             options.add_argument('--headless=False')
             
@@ -47,17 +47,25 @@ class SignIn(QObject):
             self.driver.find_element(By.XPATH, '//*[@id="password"]').send_keys(self.password)
             time.sleep(1)
             self.driver.find_element(By.XPATH, '/html/body/div/div/div[1]/form/div[2]/div/input[4]').click()
+            expected_url = 'https://jobinja.ir/login/user'
+            result = ' '
+            if self.driver.current_url == expected_url:
+                result = 'Email or password is incorrect!'
+            else:
             
-            self.driver.add_cookie({"name": "user", "value": self.username})
-            self.driver.add_cookie({"name": "password", "value": self.password})
-            cookies_file = 'cookies.pkl'
-            cookies = self.driver.get_cookies()
-            with open(cookies_file, 'wb') as file:
-                pickle.dump(cookies, file)
-                
-            for cookie in cookies:
-                self.driver.add_cookie(cookie)
+                self.driver.add_cookie({"name": "user", "value": self.username})
+                self.driver.add_cookie({"name": "password", "value": self.password})
+                cookies_file = 'cookies.pkl'
+                cookies = self.driver.get_cookies()
+                with open(cookies_file, 'wb') as file:
+                    pickle.dump(cookies, file)
+                    
+                for cookie in cookies:
+                    self.driver.add_cookie(cookie)
             
+            self.finished.emit(result)
+            self.deleteLater()
             
-            self.finished.emit()
+        except Exception as e:
+            print(e)
         #------------------------------------------------
