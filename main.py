@@ -9,7 +9,12 @@ from PyQt5.QtCore import QThread
 from manage import WebDriverSingleton
 from Search import Search
 from SignIn import SignIn
+<<<<<<< HEAD
 from PyQt5.QtCore import pyqtSignal
+=======
+
+
+>>>>>>> 7f4f34bbfd1e5737eb2a9375c0fb1f8f95ccd43e
 class Window(QMainWindow):
     threads_finished = pyqtSignal()
     def __init__(self):
