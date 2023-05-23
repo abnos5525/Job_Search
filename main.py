@@ -19,18 +19,21 @@ class Window(QMainWindow):
         self.txtResult.setLayoutDirection(Qt.RightToLeft)
         #--------------------------------------------------
         
-        self.txtUsername.setText('abnos5525@gmail.com')
-        self.txtPassword.setText('mhh55258114')
-        
         if manage.signin() == False:
             self.btnExit.setEnabled(False)
             self.btnExit.setStyleSheet("background-color: #f0f0f0;")
+            self.btnSearch.setText("ورود")
+            self.txtJob.setEnabled(False)
         else:
             self.btnExit.setEnabled(True)
+            self.txtUsername.setEnabled(False)
+            self.txtPassword.setEnabled(False)
+            self.btnSearch.setText("جستجو")
             
         # Declarations
         self.first_thread = None
         self.second_thread = None
+        self.threads_finished = False
         
         
         #Actions
@@ -40,7 +43,7 @@ class Window(QMainWindow):
         self.btnSearch.clicked.connect(self.result)
         self.btnExit.clicked.connect(self.exitLog)
         
-        self.threads_finished.connect(self.cleanupThreads)
+        self.btnExit.clicked.connect(self.cleanupThreads) 
         #--------------------------------------------------
         
     #switch to pages
@@ -59,16 +62,17 @@ class Window(QMainWindow):
         username = self.txtUsername.text()
         password = self.txtPassword.text()
 
-        if jobText != '' and username != '' and  password != '':
+        if username != '' and  password != '':
             self.txtResult.clear()
             self.btnSearch.setEnabled(False)
             self.btnSearch.setStyleSheet("background-color: #f0f0f0;")
             self.signInInfo = [username,password]
-            self.searchInfo = [jobText,cityText,categoryText]
+            self.searchInfo = None
             
             if not manage.signin():
                 try:
                     if self.first_thread is None or not self.first_thread.isRunning():
+                        self.cleanupThreads() 
                         self.first_thread = QThread()
                         self.first_worker = SignIn(self.signInInfo)
                         self.first_worker.moveToThread(self.first_thread)
@@ -78,13 +82,16 @@ class Window(QMainWindow):
                         self.first_worker.finished.connect(self.first_worker.deleteLater)
                         self.first_thread.finished.connect(self.first_thread.deleteLater)
                         
-                        self.first_worker.finished.connect(self.cleanupThreads)
+                        self.first_worker.finished.connect(self.handleFirstWorkerFinished)
+                        self.first_worker.finished.connect(self.start_second_worker)
                         self.first_thread.started.connect(self.first_worker.do_work)
                         self.first_thread.start()
+                    
                 except Exception as e:
                     print(e)
             else:
-                if self.second_thread is None or not self.second_thread.isRunning():
+                if self.second_thread is None or not self.second_thread.isRunning() and self.searchInfo != '':
+                    self.searchInfo = [jobText,cityText,categoryText]
                     self.second_thread = QThread()
                     self.second_worker = Search(self.searchInfo)
                     self.second_worker.moveToThread(self.second_thread)
@@ -93,31 +100,23 @@ class Window(QMainWindow):
                     self.second_worker.finished.connect(self.second_worker.deleteLater)
                     self.second_thread.finished.connect(self.second_thread.deleteLater)
                     
-                    self.second_worker.finished.connect(self.cleanupThreads)  
+                    self.second_worker.finished.connect(self.handleSecondWorkerFinished)
                     self.second_thread.started.connect(self.second_worker.do_work)
                     self.second_thread.start()
+                    
+                else:
+                    QMessageBox.warning(self,'اخطار','فیلدها را پر کنید')
             
             
             
         else:
             QMessageBox.warning(self,'اخطار','فیلدها را پر کنید')
             
-    def cleanupThreads(self):
-        # Clean up threads
-        if self.first_thread is not None:
-            self.first_worker.finished.disconnect(self.cleanupThreads)  # Disconnect finished signal
-            self.first_worker.finished.disconnect(self.start_second_worker)
-            self.first_thread.started.disconnect(self.first_worker.do_work)
-            self.first_thread.quit()
-            self.first_thread.wait()
-            self.first_thread = None
-        if self.second_thread is not None:
-            self.second_worker.finished.disconnect(self.cleanupThreads)  # Disconnect finished signal
-            self.second_worker.finished.disconnect(self.second_thread.quit)
-            self.second_thread.started.disconnect(self.second_worker.do_work)
-            self.second_thread.quit()
-            self.second_thread.wait()
-            self.second_thread = None
+    def handleFirstWorkerFinished(self):
+        self.cleanupThreads()
+
+    def handleSecondWorkerFinished(self):
+        self.cleanupThreads()
             
     def update_result(self, result):
         self.thResult = result
@@ -125,9 +124,21 @@ class Window(QMainWindow):
         if os.path.exists('cookies.pkl'):
             self.btnExit.setEnabled(True)
             self.btnExit.setStyleSheet("background-color: red;color:white;")
-        
+            self.btnSearch.setText("جستجو")
+            self.txtJob.setEnabled(True)
         self.btnSearch.setEnabled(True)
         self.btnSearch.setStyleSheet("background-color: green;color:white;")
+        
+    def cleanupThreads(self):
+        # Clean up threads
+        if self.first_thread is not None:
+            self.first_thread.quit()
+            self.first_thread.wait()
+            self.first_thread = None
+        if self.second_thread is not None:
+            self.second_thread.quit()
+            self.second_thread.wait()
+            self.second_thread = None
         
         
         
@@ -152,6 +163,14 @@ class Window(QMainWindow):
             os.remove('cookies.pkl')
         self.btnExit.setEnabled(False)
         self.btnExit.setStyleSheet("background-color: #f0f0f0;")
+        self.txtUsername.setEnabled(True)
+        self.txtPassword.setEnabled(True)
+        self.txtUsername.clear()
+        self.txtPassword.clear()
+        self.btnSearch.setText("ورود")
+        self.txtJob.setEnabled(False)
+        
+        self.cleanupThreads()
     
 if __name__ == "__main__":
     app = QApplication(sys.argv)
