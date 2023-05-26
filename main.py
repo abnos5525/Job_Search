@@ -9,12 +9,8 @@ from PyQt5.QtCore import QThread
 from manage import WebDriverSingleton
 from Search import Search
 from SignIn import SignIn
-<<<<<<< HEAD
 from PyQt5.QtCore import pyqtSignal
-=======
 
-
->>>>>>> 7f4f34bbfd1e5737eb2a9375c0fb1f8f95ccd43e
 class Window(QMainWindow):
     threads_finished = pyqtSignal()
     def __init__(self):
@@ -22,6 +18,7 @@ class Window(QMainWindow):
         uic.loadUi("view.ui",self)
         self.stackedWidget.setCurrentIndex(0)
         self.txtResult.setLayoutDirection(Qt.RightToLeft)
+        self.txtPassword.setEchoMode(QLineEdit.Password)
         #--------------------------------------------------
         
         if manage.signin() == False:
@@ -59,63 +56,65 @@ class Window(QMainWindow):
             self.stackedWidget.setCurrentIndex(0)
             
     def result(self):
-        
         jobText = self.txtJob.text()
         cityText = self.cmCity.currentText()
         categoryText = self.cmCategory.currentText()
         
         username = self.txtUsername.text()
         password = self.txtPassword.text()
-
-        if username != '' and  password != '':
-            self.txtResult.clear()
-            self.btnSearch.setEnabled(False)
-            self.btnSearch.setStyleSheet("background-color: #f0f0f0;")
-            self.signInInfo = [username,password]
-            self.searchInfo = None
-            
-            if not manage.signin():
+        
+        self.txtResult.clear()
+        if not manage.signin():
                 try:
                     if self.first_thread is None or not self.first_thread.isRunning():
-                        self.cleanupThreads() 
-                        self.first_thread = QThread()
-                        self.first_worker = SignIn(self.signInInfo)
-                        self.first_worker.moveToThread(self.first_thread)
-                        self.first_worker.finished.connect(self.update_result)
-                        self.first_worker.finished.connect(self.start_second_worker)
-                        self.first_worker.finished.connect(self.first_thread.quit)
-                        self.first_worker.finished.connect(self.first_worker.deleteLater)
-                        self.first_thread.finished.connect(self.first_thread.deleteLater)
-                        
-                        self.first_worker.finished.connect(self.handleFirstWorkerFinished)
-                        self.first_worker.finished.connect(self.start_second_worker)
-                        self.first_thread.started.connect(self.first_worker.do_work)
-                        self.first_thread.start()
+                        if username != '' and  password != '':
+                            self.lblHelp.setText('درحال ورود')
+                            self.btnSearch.setEnabled(False)
+                            self.btnSearch.setStyleSheet("background-color: #f0f0f0;")
+                            self.signInInfo = [username,password]
+                            self.searchInfo = None
+                            self.cleanupThreads() 
+                            self.first_thread = QThread()
+                            self.first_worker = SignIn(self.signInInfo)
+                            self.first_worker.moveToThread(self.first_thread)
+                            self.first_worker.finished.connect(self.update_result)
+                            self.first_worker.finished.connect(self.start_second_worker)
+                            self.first_worker.finished.connect(self.first_thread.quit)
+                            self.first_worker.finished.connect(self.first_worker.deleteLater)
+                            self.first_thread.finished.connect(self.first_thread.deleteLater)
+                            
+                            self.first_worker.finished.connect(self.handleFirstWorkerFinished)
+                            self.first_worker.finished.connect(self.start_second_worker)
+                            self.first_thread.started.connect(self.first_worker.do_work)
+                            self.first_thread.start()
+                        else:
+                            QMessageBox.warning(self,'اخطار','فیلدها را پر کنید')
                     
                 except Exception as e:
                     print(e)
-            else:
-                if self.second_thread is None or not self.second_thread.isRunning() and self.searchInfo != '':
-                    self.searchInfo = [jobText,cityText,categoryText]
-                    self.second_thread = QThread()
-                    self.second_worker = Search(self.searchInfo)
-                    self.second_worker.moveToThread(self.second_thread)
-                    self.second_worker.finished.connect(self.update_result)
-                    self.second_worker.finished.connect(self.second_thread.quit)
-                    self.second_worker.finished.connect(self.second_worker.deleteLater)
-                    self.second_thread.finished.connect(self.second_thread.deleteLater)
-                    
-                    self.second_worker.finished.connect(self.handleSecondWorkerFinished)
-                    self.second_thread.started.connect(self.second_worker.do_work)
-                    self.second_thread.start()
-                    
-                else:
-                    QMessageBox.warning(self,'اخطار','فیلدها را پر کنید')
-            
-            
-            
         else:
-            QMessageBox.warning(self,'اخطار','فیلدها را پر کنید')
+            if jobText != '':
+                if self.second_thread is None or not self.second_thread.isRunning():
+                        self.btnExit.setEnabled(False)
+                        self.btnExit.setStyleSheet("background-color: #f0f0f0;")
+                        self.btnSearch.setEnabled(False)
+                        self.btnSearch.setStyleSheet("background-color: #f0f0f0;")
+                        self.lblHelp.setText('درحال جستجو')
+                        self.searchInfo = [jobText,cityText,categoryText]
+                        self.second_thread = QThread()
+                        self.second_worker = Search(self.searchInfo)
+                        self.second_worker.moveToThread(self.second_thread)
+                        self.second_worker.finished.connect(self.update_result)
+                        self.second_worker.finished.connect(self.second_thread.quit)
+                        self.second_worker.finished.connect(self.second_worker.deleteLater)
+                        self.second_thread.finished.connect(self.second_thread.deleteLater)
+                        
+                        self.second_worker.finished.connect(self.handleSecondWorkerFinished)
+                        self.second_thread.started.connect(self.second_worker.do_work)
+                        self.second_thread.start()
+                    
+            else:
+                    QMessageBox.warning(self,'اخطار','فیلدها را پر کنید')
             
     def handleFirstWorkerFinished(self):
         self.cleanupThreads()
@@ -123,7 +122,8 @@ class Window(QMainWindow):
     def handleSecondWorkerFinished(self):
         self.cleanupThreads()
             
-    def update_result(self, result):
+    def update_result(self, result,message):
+        self.lblHelp.setText(message)
         self.thResult = result
         self.txtResult.setText(result)
         if os.path.exists('cookies.pkl'):
@@ -145,14 +145,6 @@ class Window(QMainWindow):
             self.second_thread.wait()
             self.second_thread = None
         
-        
-        
-            
-    # def start(self):
-    #     if manage.signin() == False:
-    #         if not self.first_thread.isRunning():
-    #         #self.first_thread.started.connect(self.first_worker.do_work)
-    #             self.first_thread.start()
 
     def start_second_worker(self):
         if self.thResult is None:

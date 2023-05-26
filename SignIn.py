@@ -1,20 +1,16 @@
-import manage
-from selenium import webdriver
 from selenium.webdriver.common.by import By
-from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as ec
 import time
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import pyqtSignal, QObject
 from selenium.webdriver.firefox.options import Options
-import os
 
 from manage import WebDriverSingleton
 import pickle
 
 class SignIn(QObject):
-    finished = pyqtSignal(str)
+    finished = pyqtSignal(str,str)
     
     def __init__(self, text):
         super().__init__()
@@ -34,7 +30,7 @@ class SignIn(QObject):
             #self.options.add_argument(self.directory)
         try:
             options = Options()
-            options.add_argument('--headless=False')
+            options.add_argument('--headless')
             
             self.driverClass = WebDriverSingleton(option=options)
             self.driver = self.driverClass.get_driver()
@@ -49,8 +45,9 @@ class SignIn(QObject):
             self.driver.find_element(By.XPATH, '/html/body/div/div/div[1]/form/div[2]/div/input[4]').click()
             expected_url = 'https://jobinja.ir/login/user'
             result = ' '
+            message = ' '
             if self.driver.current_url == expected_url:
-                result = 'Email or password is incorrect!'
+                message = 'ایمیل یا رمزعبور درست نمیباشد'
             else:
             
                 self.driver.add_cookie({"name": "user", "value": self.username})
@@ -62,8 +59,8 @@ class SignIn(QObject):
                     
                 for cookie in cookies:
                     self.driver.add_cookie(cookie)
-            
-            self.finished.emit(result)
+                message = 'وارد شدید!'
+            self.finished.emit(result,message)
             self.deleteLater()
             
         except Exception as e:
