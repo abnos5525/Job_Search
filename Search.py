@@ -62,24 +62,21 @@ class Search(QObject):
                 listWorkName = self.driver.find_elements(By.CLASS_NAME,'c-jobListView__titleLink')
                 cityName = self.driver.find_elements(By.CSS_SELECTOR,'i.c-icon--place + span')
                 listCompName = self.driver.find_elements(By.CSS_SELECTOR,'i.c-icon--construction + span')
-                listContract1 = self.driver.find_elements(By.CSS_SELECTOR,'c-jobListView__metaItem > span:first-child')
-                listContract2 = self.driver.find_elements(By.CSS_SELECTOR,'c-jobListView__metaItem > span:nth-child(2)')
+                listContract1 = self.driver.find_elements(By.CSS_SELECTOR,'i.c-icon--resume + span > span:nth-child(1)')
+                listContract2 = self.driver.find_elements(By.CSS_SELECTOR,'i.c-icon--resume + span > span:nth-child(2)')
                 print('yeeeeees3')
-                for w,city,c in zip(listWorkName,cityName,listCompName):
-                        # for c1 in listCompName:
-                        #     for c2 in listContract1:
-                        #         for con in listContract2:
-                                    text = w.get_attribute("innerHTML")
-                                    result += text.lstrip() + '\n'
-                                    text = city.get_attribute("innerHTML")
-                                    result += text.lstrip() + '\n'
-                                    text = c.get_attribute("innerHTML")
-                                    result += text.lstrip() + '\n'
-                                    # text = con1.get_attribute("innerHTML")
-                                    # result += text.lstrip() + '\n'
-                                    # text = con2.get_attribute("innerHTML")
-                                    # result += text.lstrip() + '\n'
-                                    result += '----------------\n'
+                for w,city,c,lc,lc2 in zip(listWorkName,cityName,listCompName,listContract1,listContract2):
+                            text = w.get_attribute("innerHTML")
+                            result += text.lstrip() + '\n'
+                            text = city.get_attribute("innerHTML")
+                            result += text.lstrip() + '\n'
+                            text = c.get_attribute("innerHTML")
+                            result += text.lstrip() + '\n'
+                            text = lc.get_attribute("innerHTML")
+                            result += text.lstrip() + '\n'
+                            text = lc2.get_attribute("innerHTML")
+                            result += text.lstrip() + '\n'
+                            result += '----------------\n'
                 message = 'چند مورد یافت شد!'
         except Exception as e:
             message = 'چیزی یافت نشد!'
