@@ -6,7 +6,8 @@
 ## Details
 Written in python 3
 You might need to download Geckodriver win64 for automation
-And install packages with `pip install -r reqquirements.txt`
+And install packages with 
+- `pip install -r reqquirements.txt`
 
 ## License
 Free Open Source
